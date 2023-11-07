@@ -1,8 +1,12 @@
+import { IsNotEmpty } from "class-validator";
 
 export class OrderDto {
+    @IsNotEmpty()
     id: number;
+    @IsNotEmpty()
     name: string;
-    price: number;
+    @IsNotEmpty()
+    valueFinal: number;
     service?: Service;
     product?: Product;
     location?: Location;
@@ -12,7 +16,6 @@ export class Service {
     id: number;
     name: string;
     price: number;
-    type: string;
     idOrder: number;
 }
 
@@ -20,7 +23,6 @@ export class Product {
     id: number;
     name: string;
     price: number;
-    type: string;
     idOrder: number;
 }
 
@@ -28,7 +30,6 @@ export class Location {
     id: number;
     name: string;
     price: number;
-    type: string;
     idOrder: number;
 }
 

@@ -1,26 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { OrderDto } from 'src/dtos/order.dto';
-
+import { OrderInterface } from './Interfaces/Order.interface';
 
 @Injectable()
 export class OrderService{
 
-    orders: OrderDto[] = [{id: 1, name: 'Pedido de reforma', price: 300}];
+    orders: OrderInterface[] = [{id: 1, name: 'Pedido de reforma', valueFinal: 300}];
 
-    getOrders(): OrderDto[]{
+    getOrders(): OrderInterface[]{
         return this.orders;
     }
 
-    getOrderById(id: number): OrderDto {
+    getOrderById(id: number): OrderInterface {
         return this.orders.find(order => order.id === id);
     }
 
-    createOrder(order: OrderDto): OrderDto{
+    createOrder(order: OrderDto): OrderInterface{
         this.orders.push(order);
         return order;
     }
 
-    updateOrder(orderUpdate: OrderDto): OrderDto {
+    updateOrder(orderUpdate: OrderDto): OrderInterface {
         const orderIndex = this.orders.findIndex(order => order.id === orderUpdate.id);
         if(orderIndex !== -1){
             this.orders[orderIndex] = orderUpdate;
