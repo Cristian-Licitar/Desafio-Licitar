@@ -5,7 +5,7 @@ import { OrderInterface } from './Interfaces/Order.interface';
 @Injectable()
 export class OrderService{
 
-    orders: OrderInterface[] = [{id: 1, name: 'Pedido de reforma', valueFinal: 300}];
+    orders: OrderInterface[] = [{id: 1, name: 'Pedido de reforma', valueFinal: 300, type: 'Serviço'}];
 
     getOrders(): OrderInterface[]{
         return this.orders;

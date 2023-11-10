@@ -1,4 +1,5 @@
 import { IsNotEmpty } from "class-validator";
+import { ItemOrderInterface } from "src/Orders/Interfaces/ItemOrder.interface";
 
 export class OrderDto {
     @IsNotEmpty()
@@ -7,29 +8,7 @@ export class OrderDto {
     name: string;
     @IsNotEmpty()
     valueFinal: number;
-    service?: Service;
-    product?: Product;
-    location?: Location;
+    @IsNotEmpty()
+    type: string;
+    itemOrder?: ItemOrderInterface;
 }
-
-export class Service {
-    id: number;
-    name: string;
-    price: number;
-    idOrder: number;
-}
-
-export class Product {
-    id: number;
-    name: string;
-    price: number;
-    idOrder: number;
-}
-
-export class Location {
-    id: number;
-    name: string;
-    price: number;
-    idOrder: number;
-}
-
