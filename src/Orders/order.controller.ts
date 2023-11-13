@@ -16,8 +16,9 @@ export class OrderController{
     }
 
     @Get('/:id')
-    findById(@Param('id') id: number): OrderInterface{
-        return this.orderService.getOrderById(id);
+    findById(@Param('id') id: string): OrderInterface{
+        const idOrder = parseInt(id);//transformando a string em um número inteiro
+        return this.orderService.getOrderById(idOrder);
     }
 
     @Post()
@@ -26,8 +27,9 @@ export class OrderController{
     }
 
     @Post('/:id/items')
-    createItemOrder(@Body() itemOder: ItemOrderInterface, @Param('id') idOrder: number): string{
-        return this.orderService.createItemOrder(itemOder, idOrder);
+    createItemOrder(@Body() itemOder: ItemOrderInterface, @Param('id') idOrder: string): OrderInterface{
+        const id = parseInt(idOrder);//transformando a string em um número inteiro
+        return this.orderService.createItemOrder(itemOder, id);
     }
 
     @Patch('/update')
@@ -36,7 +38,8 @@ export class OrderController{
     }
 
     @Delete('/:id')
-    delete(@Param('id') id: number): string {
-        return this.orderService.deleteOrder(id);
+    delete(@Param('id') id: string): string {
+        const idOrder = parseInt(id);//transformando a string em um número inteiro
+        return this.orderService.deleteOrder(idOrder);
     }
 }

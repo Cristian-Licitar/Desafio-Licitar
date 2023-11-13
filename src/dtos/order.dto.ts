@@ -6,7 +6,6 @@ export class OrderDto {
     id: number;
     @IsNotEmpty()
     name: string;
-    @IsNotEmpty()
-    totalValue: number;
+    totalValue?: number;
     itemsOrder?: ItemOrderInterface[];//Tipo de array que pode armazenar uma lista de: Produtos, Serviços ou Locações
 }
