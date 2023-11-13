@@ -1,3 +1,4 @@
+import { ItemOrderInterface } from 'src/Orders/Interfaces/ItemOrder.interface';
 import { Controller, Get, Post, Body, Param, Patch, Delete} from "@nestjs/common";
 import { OrderService } from "./order.service";
 import { OrderDto } from "src/dtos/order.dto";
@@ -20,8 +21,13 @@ export class OrderController{
     }
 
     @Post()
-    create(@Body() order: OrderDto): OrderInterface{
+    createOrder(@Body() order: OrderDto): OrderInterface{
         return this.orderService.createOrder(order);
+    }
+
+    @Post('/:id/items')
+    createItemOrder(@Body() itemOder: ItemOrderInterface, @Param('id') idOrder: number): string{
+        return this.orderService.createItemOrder(itemOder, idOrder);
     }
 
     @Patch('/update')
