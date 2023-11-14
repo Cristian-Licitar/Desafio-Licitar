@@ -19,54 +19,84 @@ export class OrderService{
     }
 
     //método que retorna o pedido pelo ID passado como parâmetro
-    getOrderById(id: number): OrderInterface{
+    getOrderById(id: number): OrderInterface | string{
         const order = this.orders.find(order => order.id === id);
-        return order;
+        if(order){
+            return order;
+        }else {
+            return `Não existe um pedido com o ID: ${id}`;
+        }
+        
     }
 
     //método que cria um novo pedido
-    createOrder(order: OrderDto): OrderInterface{
+    createOrder(order: OrderDto): OrderInterface | string{
         this.orders.push(order);
         this.calculateNewOrderValue(order);
-        return order;
+        let verification: boolean;
+        if(order.itemsOrder){
+            order.itemsOrder.map(item =>{
+                 verification = this.verificationType(item.type)
+            });
+            if(verification){
+                return order
+            }else {
+                return 'O tipo de algum item do pedido não é válido.';
+            }
+        }else {
+            return order;
+        }
     }
 
     //método que adiciona um item a um pedido, através do ID do pedido que é passado como parâmetro (idOrder)
-    createItemOrder(itemOrder: ItemOrderInterface, idOrder: number): OrderInterface{
+    createItemOrder(itemOrder: ItemOrderInterface, idOrder: number): OrderInterface | string{
 
         //variável criada para receber o retorno de um boolean através do método applyTax
-        const verificationType = this.applyTax(itemOrder);
-        if(verificationType){
+        const verification = this.verificationType(itemOrder.type);
+        let orderAtt: OrderInterface;
+        if(verification){
             this.orders.map((order) => {
                 if(order.id === idOrder){
                     order.itemsOrder.push(itemOrder);//adiciono o novo item, a lista de itens do pedido
-                    this.calculateFinalValue(idOrder);//chamo o método que atualiza o valor final daquele pedido
-                    return order;
+                    this.calculateNewOrderValue(order);//chamo o método que atualiza os valores do pedido
+                    orderAtt= order;
                 }
             });
-
+            return orderAtt;
         }else {
-            return null;
+            return `Por favor, verifique se o tipo: ${itemOrder.type} e o ID: ${idOrder} do pedido estão corretos`;
         }
     
     }
 
     //método que atualiza o pedido
-    updateOrder(orderUpdate: OrderDto): OrderInterface {
-        const index = this.orders.findIndex(order => order.id === orderUpdate.id);
-        if(index !== -1){
-            this.orders[index] = orderUpdate;
-            this.calculateNewOrderValue(orderUpdate);
-            return this.orders[index];
+    updateOrder(orderUpdate: OrderDto): OrderInterface | string{
+        //variável que recebera um index para verificação
+        const indexOrder = this.orders.findIndex(order => order.id === orderUpdate.id);//Chama o metódo que verifica se existe um objeto com esse ID na lista de pedidos e retorna um index
+        let verification = false;
+        orderUpdate.itemsOrder.map((item) => {
+            verification = this.verificationType(item.type);//verifico se o tipo de todos os itens do pedido são válidos
+        });
+        
+        if(indexOrder !== -1 && verification){//só depois das 2 verificações é que o pedido é atualizado
+            this.orders[indexOrder] = orderUpdate;
+            this.calculateNewOrderValue(this.orders[indexOrder]);
+            return this.orders[indexOrder];
         }else {
-            return null;
+            return 'Não foi possível atualizar o pedido. Verifique o ID do pedido e o tipo de cada item do pedido';
         }
     }
 
     //método que exclui um pedido pelo ID
     deleteOrder(id: number): string {
-        this.orders = this.orders.filter(order => order.id !== id);
-        return 'Serviço deletado com sucesso';
+        const index = this.orders.findIndex(order => order.id === id);
+        if(index !== -1) {
+            this.orders = this.orders.filter(order => order.id !== id);
+            return 'Pedido deletado com sucesso';
+        } else {
+            return 'Não existe um pedido com esse ID em nosso banco de Dados';
+        }
+       
     }
 
     //método usado para atualizar os valores de um novo pedido
@@ -80,9 +110,9 @@ export class OrderService{
         } 
     }
 
-    //método criado para verificar o tipo do item e aplicar o valor do imposto ao novo item adicionado ao pedido
+    //método criado para aplicar o valor do imposto ao novo item adicionado ao pedido
     applyTax(itemOrder: ItemOrderInterface): boolean{
-
+        itemOrder.priceTax = 0;
         if(itemOrder.type === 'produto'){
            itemOrder.priceTax = itemOrder.price * 1.1;//adicionando 10% de imposto sobre o produto
         }else if(itemOrder.type === 'serviço'){
@@ -97,15 +127,25 @@ export class OrderService{
         return true;//retorno true se a variável "type" for um tipo válido
     }
 
-    //método criado apenas para atualizar o valor final de um pedido, toda vez que um novo item for inserido neste pedido
+    //método criado apenas para atualizar o valor final de um pedido
     calculateFinalValue(id: number): void{
         this.orders.map((order) => {
             if(order.id === id){
+                order.totalValue = 0;
                 order.itemsOrder.map((item) => {
-                    order.totalValue = 0;
                     order.totalValue+= item.priceTax;
                 })
             }
         });
     }
+
+    //método criado para verificar o tipo do item
+    verificationType(type: string): boolean{
+        if(type === 'produto' || type ===  'serviço' || type === 'locação'){//se o tipo for válido retorno true
+            return true;
+        }else {
+            return false;
+        }
+    }
+
 }
