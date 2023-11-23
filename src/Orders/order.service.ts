@@ -20,38 +20,47 @@ export class OrderService{
 
     //método que retorna o pedido pelo ID passado como parâmetro
     getOrderById(id: number): OrderInterface | string{
-        const order = this.orders.find(order => order.id === id);
+        const order = this.orders.find(order => order.id === id);//verifico se tem algum pedido com esse ID passado como parâmetro na lista de pedidos
         if(order){
             return order;
         }else {
-            return `Não existe um pedido com o ID: ${id}`;
+            return `Não existe no banco de dados um pedido com o ID: ${id}`;
         }
         
     }
 
     //método que cria um novo pedido
     createOrder(order: OrderDto): OrderInterface | string{
-        this.orders.push(order);
-        this.calculateNewOrderValue(order);
-        let verification: boolean;
-        if(order.itemsOrder){
+        
+        let verification = false;//variável criada para receber o retorno de um boolean através do método verificationType()
+        let type = '';//váriavel que irá armazenar o tipo do objeto caso ele não seja válido
+        let idItem: number;
+        if(order.itemsOrder && order.itemsOrder.length > 0){//verifico se o array de itens do pedido não está vazio e nem com o valor Null
             order.itemsOrder.map(item =>{
-                 verification = this.verificationType(item.type)
+                 verification = this.verificationType(item.type);//método que verifica se o tipo do item do pedido é válido
+                 if(verification === false){//caso não seja
+                    type = item.type;//armazenar o tipo inválido para que ele seja exibido para o usuário
+                    idItem = item.id;//armezana o ID do item que tem o tipo inválido
+                 }
             });
-            if(verification){
-                return order
-            }else {
-                return 'O tipo de algum item do pedido não é válido.';
+
+            if(verification !== false){//só cria um novo pedido se todos os tipos dos itens do pedido passar na verificação
+                this.orders.push(order);//adiciono o pedido a lista de pedidos
+                this.calculateNewOrderValue(order);//chamo o método que atualiza o valor final do pedido, aplicando a taxa de imposto
+                return order;
+            } 
+            else if(type !== ''){//se o tipo é invalido a variável type será preenchida e não estará vazia
+                return `O tipo: '${type}' do item: ${idItem}, não é válido.`;// então retorno a mensagem exibindo para o usuário qual é tipo que está errado
             }
-        }else {
-            return order;
-        }
+        } else {
+            return 'O pedido não contém itens';//Se o array de itens do pedido está vazio ou com o valor Null, retorno essa mensagem
+        } 
     }
 
     //método que adiciona um item a um pedido, através do ID do pedido que é passado como parâmetro (idOrder)
     createItemOrder(itemOrder: ItemOrderInterface, idOrder: number): OrderInterface | string{
 
-        //variável criada para receber o retorno de um boolean através do método applyTax
+        //variável criada para receber o retorno de um boolean através do método verificationType()
         const verification = this.verificationType(itemOrder.type);
         let orderAtt: OrderInterface;
         if(verification){
@@ -63,7 +72,7 @@ export class OrderService{
                 }
             });
             return orderAtt;
-        }else {
+        }else {//se o tipo do pedido é inválido ou o ID do pedido não foi encontrado
             return `Por favor, verifique se o tipo: ${itemOrder.type} e o ID: ${idOrder} do pedido estão corretos`;
         }
     
@@ -78,7 +87,8 @@ export class OrderService{
             verification = this.verificationType(item.type);//verifico se o tipo de todos os itens do pedido são válidos
         });
         
-        if(indexOrder !== -1 && verification){//só depois das 2 verificações é que o pedido é atualizado
+        //se o index retornado for negativo, é porque não existe um objeto com o ID do pedido passado como parâmetro
+        if(indexOrder !== -1 && verification){//Verifica o valor do index e se os tipos dos itens dos objetos são válidos
             this.orders[indexOrder] = orderUpdate;
             this.calculateNewOrderValue(this.orders[indexOrder]);
             return this.orders[indexOrder];
@@ -89,12 +99,12 @@ export class OrderService{
 
     //método que exclui um pedido pelo ID
     deleteOrder(id: number): string {
-        const index = this.orders.findIndex(order => order.id === id);
+        const index = this.orders.findIndex(order => order.id === id);//caso não exista um pedido com esse ID, o valor retornado será -1
         if(index !== -1) {
-            this.orders = this.orders.filter(order => order.id !== id);
+            this.orders = this.orders.filter(order => order.id !== id);//retiro o pedido da lista
             return 'Pedido deletado com sucesso';
         } else {
-            return 'Não existe um pedido com esse ID em nosso banco de Dados';
+            return `Não existe um pedido com esse ID: ${id} em nosso banco de Dados`;
         }
        
     }
@@ -104,9 +114,9 @@ export class OrderService{
         if(order.itemsOrder.length > 0){
             //percorro o array de itens do pedido, atualizando os valores dos impostos sobre cada um dos itens
             order.itemsOrder.map(item => {
-                this.applyTax(item);
+                this.applyTax(item);//chamo o método que aplica a taxa no item do pedido
             });
-            this.calculateFinalValue(order.id);//atualizo o valor final daquele pedido
+            this.calculateFinalValue(order.id);//atualizo o valor final daquele pedido depois de aplicar as taxas
         } 
     }
 
@@ -129,11 +139,12 @@ export class OrderService{
 
     //método criado apenas para atualizar o valor final de um pedido
     calculateFinalValue(id: number): void{
+        //percorro a lista de pedidos
         this.orders.map((order) => {
-            if(order.id === id){
-                order.totalValue = 0;
+            if(order.id === id){//ao encontrar o pedido
+                order.totalValue = 0;//zero o valor final
                 order.itemsOrder.map((item) => {
-                    order.totalValue+= item.priceTax;
+                    order.totalValue+= item.priceTax;//atualizo o valor final do pedido
                 })
             }
         });
